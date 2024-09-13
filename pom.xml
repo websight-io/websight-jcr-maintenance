@@ -25,22 +25,57 @@
         <version>41</version>
         <relativePath />
     </parent>
-    <artifactId>org.apache.sling.jcr.maintenance</artifactId>
+
+    <groupId>io.websight</groupId>
+    <artifactId>io.websight.sling.jcr.maintenance</artifactId>
     <version>1.0.3-SNAPSHOT</version>
-    <name>Apache Sling JCR Maintenance</name>
-    <description>Maintenance jobs for the JCR</description>
+    <name>WebSight fork of Apache Sling JCR Maintenance</name>
+    <description>Maintenance jobs for the JCR. Forked from 1.0.3-SNAPSHOT</description>
 
     <properties>
         <project.build.outputTimestamp>2021-04-15T18:14:05Z</project.build.outputTimestamp>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
+    <licenses>
+        <license>
+            <name>Apache License Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
 
     <scm>
-        <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-jcr-maintenance.git</connection>
-        <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-jcr-maintenance.git</developerConnection>
-        <url>https://gitbox.apache.org/repos/asf?p=sling-org-apache-sling-jcr-maintenance.git</url>
+        <connection>scm:git:git://github.com/websight-io/websight-jcr-maintenance.git</connection>
+        <developerConnection>scm:git:git@github.com:websight-io/websight-jcr-maintenance.git</developerConnection>
+        <url>https://github.com/websight-io/websight-jcr-maintenance</url>
         <tag>HEAD</tag>
     </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>artifact-registry</id>
+            <url>artifactregistry://europe-west1-maven.pkg.dev/websight-io/websight-maven-releases</url>
+        </repository>
+    </distributionManagement>
+
+    <organization>
+        <name>Dynamic Solutions sp. z o.o. sp. k.</name>
+        <url>https://websight.io</url>
+    </organization>
+
+    <repositories>
+        <repository>
+            <id>artifact-registry</id>
+            <url>artifactregistry://europe-west1-maven.pkg.dev/websight-io/websight-maven-releases</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>
@@ -91,6 +126,15 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>3.0.0-M1</version>
+                <configuration>
+                    <scmCommentPrefix>[skip ci] [maven]</scmCommentPrefix>
+                    <tagNameFormat>v@{project.version}</tagNameFormat>
+                </configuration>
             </plugin>
         </plugins>
     </build>
