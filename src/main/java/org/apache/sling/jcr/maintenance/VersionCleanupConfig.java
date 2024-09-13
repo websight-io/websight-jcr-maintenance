@@ -25,4 +25,7 @@ public @interface VersionCleanupConfig {
     @AttributeDefinition(name = "%scheduler.expression.name", description = "%scheduler.expression.description")
     String scheduler_expression();
 
+    @AttributeDefinition(name = "%cleanup.enable.name", description = "%cleanup.enable.description")
+    boolean enabled() default true;
+
 }

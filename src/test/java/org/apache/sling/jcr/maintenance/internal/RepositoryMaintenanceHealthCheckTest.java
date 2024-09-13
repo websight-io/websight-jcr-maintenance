@@ -21,7 +21,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import javax.management.openmbean.CompositeData;
-
 import org.apache.felix.hc.api.Result;
 import org.apache.jackrabbit.oak.api.jmx.RepositoryManagementMBean;
 import org.apache.sling.jcr.maintenance.CompositeDataMock;
@@ -101,6 +100,7 @@ public class RepositoryMaintenanceHealthCheckTest {
         assertEquals(Result.Status.WARN, result.getStatus());
 
         DataStoreCleanupScheduler dataStoreCleanupScheduler = Mockito.mock(DataStoreCleanupScheduler.class);
+        Mockito.when(dataStoreCleanupScheduler.isEnabled()).thenReturn(true);
         repositoryHealthCheck.setDataStoreCleanupScheduler(dataStoreCleanupScheduler);
         Mockito.when(repositoryManagementMBean.getDataStoreGCStatus()).thenReturn(failedCompositeData);
         result = repositoryHealthCheck.execute();
@@ -131,6 +131,7 @@ public class RepositoryMaintenanceHealthCheckTest {
 
         Mockito.when(repositoryManagementMBean.getRevisionGCStatus()).thenReturn(failedCompositeData);
         RevisionCleanupScheduler revisionCleanupScheduler = Mockito.mock(RevisionCleanupScheduler.class);
+        Mockito.when(revisionCleanupScheduler.isEnabled()).thenReturn(true);
         repositoryHealthCheck.setRevisionCleanupScheduler(revisionCleanupScheduler);
         result = repositoryHealthCheck.execute();
         assertFalse(result.isOk());
@@ -159,10 +160,97 @@ public class RepositoryMaintenanceHealthCheckTest {
 
         VersionCleanupMBean versionCleanupMBean = Mockito.mock(VersionCleanupMBean.class);
         Mockito.when(versionCleanupMBean.isFailed()).thenReturn(true);
+        Mockito.when(versionCleanupMBean.isEnabled()).thenReturn(true);
         repositoryHealthCheck.setVersionCleanup(versionCleanupMBean);
         result = repositoryHealthCheck.execute();
         assertFalse(result.isOk());
         assertEquals(Result.Status.CRITICAL, result.getStatus());
+    }
+
+    @Test
+    public void testDataStoreDisabled() {
+        RepositoryMaintenanceHealthCheck repositoryHealthCheck = new RepositoryMaintenanceHealthCheck();
+
+        RepositoryManagementMBean repositoryManagementMBean = Mockito.mock(RepositoryManagementMBean.class);
+        Mockito.when(repositoryManagementMBean.getRevisionGCStatus()).thenReturn(successCompositeData);
+        Mockito.when(repositoryManagementMBean.getDataStoreGCStatus()).thenReturn(successCompositeData);
+
+        repositoryHealthCheck.setRepositoryManagementMBean(repositoryManagementMBean);
+
+        RevisionCleanupScheduler revisionCleanupScheduler = Mockito.mock(RevisionCleanupScheduler.class);
+        repositoryHealthCheck.setRevisionCleanupScheduler(revisionCleanupScheduler);
+
+        VersionCleanupMBean versionCleanupMBean = Mockito.mock(VersionCleanupMBean.class);
+        Mockito.when(versionCleanupMBean.isFailed()).thenReturn(false);
+        repositoryHealthCheck.setVersionCleanup(versionCleanupMBean);
+
+        Result result = repositoryHealthCheck.execute();
+        assertFalse(result.isOk());
+        assertEquals(Result.Status.WARN, result.getStatus());
+
+        DataStoreCleanupScheduler dataStoreCleanupScheduler = Mockito.mock(DataStoreCleanupScheduler.class);
+        Mockito.when(dataStoreCleanupScheduler.isEnabled()).thenReturn(false);
+        repositoryHealthCheck.setDataStoreCleanupScheduler(dataStoreCleanupScheduler);
+        Mockito.when(repositoryManagementMBean.getDataStoreGCStatus()).thenReturn(failedCompositeData);
+        result = repositoryHealthCheck.execute();
+        assertTrue(result.isOk());
+    }
+
+    @Test
+    public void testRevisionDisabled() {
+        RepositoryMaintenanceHealthCheck repositoryHealthCheck = new RepositoryMaintenanceHealthCheck();
+
+        DataStoreCleanupScheduler dataStoreCleanupScheduler = Mockito.mock(DataStoreCleanupScheduler.class);
+        repositoryHealthCheck.setDataStoreCleanupScheduler(dataStoreCleanupScheduler);
+
+        RepositoryManagementMBean repositoryManagementMBean = Mockito.mock(RepositoryManagementMBean.class);
+        Mockito.when(repositoryManagementMBean.getRevisionGCStatus()).thenReturn(successCompositeData);
+        Mockito.when(repositoryManagementMBean.getDataStoreGCStatus()).thenReturn(successCompositeData);
+
+        repositoryHealthCheck.setRepositoryManagementMBean(repositoryManagementMBean);
+
+        VersionCleanupMBean versionCleanupMBean = Mockito.mock(VersionCleanupMBean.class);
+        Mockito.when(versionCleanupMBean.isFailed()).thenReturn(false);
+        repositoryHealthCheck.setVersionCleanup(versionCleanupMBean);
+
+        Result result = repositoryHealthCheck.execute();
+        assertFalse(result.isOk());
+        assertEquals(Result.Status.WARN, result.getStatus());
+
+        Mockito.when(repositoryManagementMBean.getRevisionGCStatus()).thenReturn(failedCompositeData);
+        RevisionCleanupScheduler revisionCleanupScheduler = Mockito.mock(RevisionCleanupScheduler.class);
+        Mockito.when(revisionCleanupScheduler.isEnabled()).thenReturn(false);
+        repositoryHealthCheck.setRevisionCleanupScheduler(revisionCleanupScheduler);
+        result = repositoryHealthCheck.execute();
+        assertTrue(result.isOk());
+    }
+
+    @Test
+    public void testVersionDisabled() {
+        RepositoryMaintenanceHealthCheck repositoryHealthCheck = new RepositoryMaintenanceHealthCheck();
+
+        DataStoreCleanupScheduler dataStoreCleanupScheduler = Mockito.mock(DataStoreCleanupScheduler.class);
+        repositoryHealthCheck.setDataStoreCleanupScheduler(dataStoreCleanupScheduler);
+
+        RepositoryManagementMBean repositoryManagementMBean = Mockito.mock(RepositoryManagementMBean.class);
+        Mockito.when(repositoryManagementMBean.getRevisionGCStatus()).thenReturn(successCompositeData);
+        Mockito.when(repositoryManagementMBean.getDataStoreGCStatus()).thenReturn(successCompositeData);
+
+        repositoryHealthCheck.setRepositoryManagementMBean(repositoryManagementMBean);
+
+        RevisionCleanupScheduler revisionCleanupScheduler = Mockito.mock(RevisionCleanupScheduler.class);
+        repositoryHealthCheck.setRevisionCleanupScheduler(revisionCleanupScheduler);
+
+        Result result = repositoryHealthCheck.execute();
+        assertFalse(result.isOk());
+        assertEquals(Result.Status.WARN, result.getStatus());
+
+        VersionCleanupMBean versionCleanupMBean = Mockito.mock(VersionCleanupMBean.class);
+        Mockito.when(versionCleanupMBean.isFailed()).thenReturn(true);
+        Mockito.when(versionCleanupMBean.isEnabled()).thenReturn(false);
+        repositoryHealthCheck.setVersionCleanup(versionCleanupMBean);
+        result = repositoryHealthCheck.execute();
+        assertTrue(result.isOk());
     }
 
 }

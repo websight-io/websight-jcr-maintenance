@@ -42,7 +42,9 @@ public class DataStoreCleanupSchedulerTest {
         CompositeData doneCd = CompositeDataMock.init().put("id", id).put("code", StatusCode.SUCCEEDED.ordinal())
                 .build();
         Mockito.when(repositoryManager.getDataStoreGCStatus()).thenReturn(doneCd);
-        final DataStoreCleanupScheduler dscs = new DataStoreCleanupScheduler(Mockito.mock(DataStoreCleanupConfig.class),
+        DataStoreCleanupConfig config = Mockito.mock(DataStoreCleanupConfig.class);
+        Mockito.when(config.enabled()).thenReturn(true);
+        final DataStoreCleanupScheduler dscs = new DataStoreCleanupScheduler(config,
                 repositoryManager);
         dscs.run();
 
@@ -67,6 +69,25 @@ public class DataStoreCleanupSchedulerTest {
     }
 
     @Test
+    public void testNoRunWhenDisabled() {
+
+        Integer id = 1;
+        final RepositoryManagementMBean repositoryManager = Mockito.mock(RepositoryManagementMBean.class);
+        CompositeData startingCd = CompositeDataMock.init().put("id", id).build();
+        Mockito.when(repositoryManager.startDataStoreGC(false)).thenReturn(startingCd);
+        CompositeData doneCd = CompositeDataMock.init().put("id", id).put("code", StatusCode.SUCCEEDED.ordinal())
+            .build();
+        Mockito.when(repositoryManager.getDataStoreGCStatus()).thenReturn(doneCd);
+        DataStoreCleanupConfig config = Mockito.mock(DataStoreCleanupConfig.class);
+        Mockito.when(config.enabled()).thenReturn(false);
+        final DataStoreCleanupScheduler dscs = new DataStoreCleanupScheduler(config,
+            repositoryManager);
+        dscs.run();
+
+        Mockito.verify(repositoryManager, never()).startDataStoreGC(Mockito.anyBoolean());
+    }
+
+    @Test
     public void testSheduledExpression() {
         final String EXPECTED = "* * * * *";
         final DataStoreCleanupScheduler dscs = new DataStoreCleanupScheduler(new DataStoreCleanupConfig() {
@@ -80,6 +101,11 @@ public class DataStoreCleanupSchedulerTest {
             @Override
             public String scheduler_expression() {
                 return EXPECTED;
+            }
+
+            @Override
+            public boolean enabled() {
+                return true;
             }
 
         }, null);

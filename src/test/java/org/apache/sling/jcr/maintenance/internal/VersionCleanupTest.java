@@ -48,6 +48,7 @@ import org.apache.jackrabbit.commons.cnd.ParseException;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.ResourceResolverFactory;
+import org.apache.sling.jcr.maintenance.VersionCleanupConfig;
 import org.apache.sling.jcr.maintenance.VersionCleanupPathConfig;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.apache.sling.testing.mock.sling.junit.SlingContext;
@@ -64,6 +65,8 @@ public class VersionCleanupTest {
     public SlingContext context = new SlingContext(ResourceResolverType.JCR_OAK);
 
     private List<VersionCleanupPath> globalConfig;
+
+    private VersionCleanupConfig globalCleanupConfig;
 
     private Session session;
 
@@ -102,7 +105,23 @@ public class VersionCleanupTest {
             }
 
         }));
+        globalCleanupConfig = new VersionCleanupConfig() {
 
+          @Override
+          public Class<? extends Annotation> annotationType() {
+            return VersionCleanupConfig.class;
+          }
+
+          @Override
+          public String scheduler_expression() {
+            return null;
+          }
+
+          @Override
+          public boolean enabled() {
+            return true;
+          }
+        };
     }
 
     private void doVersions(String path, int count) throws RepositoryException {
@@ -120,7 +139,8 @@ public class VersionCleanupTest {
 
         doVersions("/content/apache/sling-apache-org/index", 10);
 
-        final VersionCleanup vcs = new VersionCleanup(globalConfig, context.getService(ResourceResolverFactory.class));
+        final VersionCleanup vcs = new VersionCleanup(globalConfig, context.getService(ResourceResolverFactory.class),
+            globalCleanupConfig);
 
         vcs.start();
         while (vcs.isRunning()) {
@@ -134,12 +154,31 @@ public class VersionCleanupTest {
     }
 
     @Test(timeout = 5000)
+    public void testNoRunWhenDisabled() throws RepositoryException {
+
+        doVersions("/content/apache/sling-apache-org/index", 10);
+        VersionCleanupConfig cleanupConfig = Mockito.mock(VersionCleanupConfig.class);
+        Mockito.when(cleanupConfig.enabled()).thenReturn(false);
+
+        final VersionCleanup vcs = new VersionCleanup(globalConfig, context.getService(ResourceResolverFactory.class),
+            cleanupConfig);
+
+        vcs.start();
+
+        assertFalse(vcs.isFailed());
+        assertFalse(vcs.isRunning());
+        assertNull(vcs.getLastMessage());
+        assertEquals(0L, vcs.getLastCleanedVersionsCount());
+    }
+
+    @Test(timeout = 5000)
     public void testStop() throws InterruptedException, VersionException, UnsupportedRepositoryOperationException,
             InvalidItemStateException, LockException, RepositoryException {
 
         doVersions("/content/apache/sling-apache-org/index", 100);
 
-        final VersionCleanup vcs = new VersionCleanup(globalConfig, context.getService(ResourceResolverFactory.class));
+        final VersionCleanup vcs = new VersionCleanup(globalConfig, context.getService(ResourceResolverFactory.class),
+            globalCleanupConfig);
 
         vcs.start();
         assertTrue(vcs.isRunning());
@@ -158,7 +197,8 @@ public class VersionCleanupTest {
         doVersions("/content/apache/sling-apache-org/index", 100);
 
         final VersionCleanup vcs = Mockito
-                .spy(new VersionCleanup(globalConfig, context.getService(ResourceResolverFactory.class)));
+                .spy(new VersionCleanup(globalConfig, context.getService(ResourceResolverFactory.class),
+                    globalCleanupConfig));
 
         vcs.start();
         vcs.start();
@@ -180,7 +220,8 @@ public class VersionCleanupTest {
         ResourceResolverFactory factory = Mockito.mock(ResourceResolverFactory.class);
         Mockito.when(factory.getServiceResourceResolver(Mockito.anyMap()))
                 .thenThrow(new LoginException("No service user"));
-        final VersionCleanup vcs = Mockito.spy(new VersionCleanup(globalConfig, factory));
+        final VersionCleanup vcs = Mockito.spy(new VersionCleanup(globalConfig, factory,
+            globalCleanupConfig));
 
         vcs.start();
 
@@ -200,7 +241,8 @@ public class VersionCleanupTest {
         context.resourceResolver().delete(context.resourceResolver().getResource("/content/apache/sling-apache-org/test2"));
         context.resourceResolver().commit();
 
-        final VersionCleanup vcs = new VersionCleanup(globalConfig, context.getService(ResourceResolverFactory.class));
+        final VersionCleanup vcs = new VersionCleanup(globalConfig, context.getService(ResourceResolverFactory.class),
+            globalCleanupConfig);
 
         vcs.start();
         while (vcs.isRunning()) {
