@@ -28,12 +28,12 @@
 
     <groupId>io.websight</groupId>
     <artifactId>io.websight.sling.jcr.maintenance</artifactId>
-    <version>1.0.3-SNAPSHOT</version>
+    <version>1.0.4</version>
     <name>WebSight fork of Apache Sling JCR Maintenance</name>
     <description>Maintenance jobs for the JCR. Forked from 1.0.3-SNAPSHOT</description>
 
     <properties>
-        <project.build.outputTimestamp>2021-04-15T18:14:05Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2024-09-17T11:39:57Z</project.build.outputTimestamp>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <bnd.version>5.3.0</bnd.version>
@@ -50,7 +50,7 @@
         <connection>scm:git:git://github.com/websight-io/websight-jcr-maintenance.git</connection>
         <developerConnection>scm:git:git@github.com:websight-io/websight-jcr-maintenance.git</developerConnection>
         <url>https://github.com/websight-io/websight-jcr-maintenance</url>
-        <tag>HEAD</tag>
+        <tag>v1.0.4</tag>
     </scm>
 
     <distributionManagement>
