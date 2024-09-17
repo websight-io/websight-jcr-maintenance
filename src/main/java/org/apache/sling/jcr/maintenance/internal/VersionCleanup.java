@@ -64,16 +64,17 @@ public class VersionCleanup extends AnnotatedStandardMBean implements Runnable, 
     private long lastCleanedVersions;
     private String lastFailureMessage;
     private final List<VersionCleanupPath> versionCleanupConfigs;
+    private final boolean enabled;
 
     @Activate
     public VersionCleanup(
             @Reference(cardinality = ReferenceCardinality.AT_LEAST_ONE, policyOption = ReferencePolicyOption.GREEDY) final List<VersionCleanupPath> versionCleanupConfigs,
-            @Reference final ResourceResolverFactory factory) {
+            @Reference final ResourceResolverFactory factory, final VersionCleanupConfig config) {
         super(VersionCleanupMBean.class);
         this.factory = factory;
         this.versionCleanupConfigs = versionCleanupConfigs;
         versionCleanupConfigs.sort((c1, c2) -> c1.getPath().compareTo(c2.getPath()) * -1);
-
+        this.enabled = config.enabled();
     }
 
     private String getPath(final Session session, final VersionHistory versionHistory) throws RepositoryException {
@@ -162,6 +163,9 @@ public class VersionCleanup extends AnnotatedStandardMBean implements Runnable, 
 
     @Override
     public void run() {
+        if (!enabled) {
+            return;
+        }
         if (isRunning()) {
             log.warn("Version cleanup already running!");
         } else {
@@ -195,6 +199,11 @@ public class VersionCleanup extends AnnotatedStandardMBean implements Runnable, 
             log.error("Failed to run version cleanup", re);
             lastFailureMessage = "Failed to run version cleanup";
         }
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return enabled;
     }
 
     @Override

@@ -42,14 +42,20 @@ public class RevisionCleanupScheduler implements RunnableJob {
 
     private final String schedulerExpression;
 
+    private final boolean enabled;
+
     @Activate
     public RevisionCleanupScheduler(final RevisionCleanupConfig config,
             @Reference final RepositoryManagementMBean repositoryManager) {
         this.repositoryManager = repositoryManager;
         this.schedulerExpression = config.scheduler_expression();
+        this.enabled = config.enabled();
     }
 
     public void run() {
+        if (!enabled) {
+            return;
+        }
         if (!RepositoryManagementUtil.isRunning(repositoryManager.getRevisionGCStatus())) {
             log.info("Starting Revision Garbage Collection");
             repositoryManager.startRevisionGC();
@@ -63,5 +69,12 @@ public class RevisionCleanupScheduler implements RunnableJob {
      */
     public String getSchedulerExpression() {
         return schedulerExpression;
+    }
+
+    /**
+     * @return the enabled
+     */
+    public boolean isEnabled() {
+        return enabled;
     }
 }

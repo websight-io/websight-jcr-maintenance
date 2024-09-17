@@ -26,6 +26,9 @@ import org.apache.jackrabbit.oak.api.jmx.Description;
 @Description("Cleanup versions")
 public interface VersionCleanupMBean {
 
+    @Description("Whether or not the service is enabled")
+    boolean isEnabled();
+
     @Description("Whether or not the service is running")
     boolean isRunning();
 

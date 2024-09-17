@@ -21,4 +21,5 @@ package org.apache.sling.jcr.maintenance;
  */
 public interface RunnableJob extends Runnable {
     String getSchedulerExpression();
+    boolean isEnabled();
 }

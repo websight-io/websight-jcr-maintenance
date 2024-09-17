@@ -62,10 +62,13 @@ public class RepositoryMaintenanceHealthCheck implements HealthCheck {
     }
 
     private void evaluateJobStatus(FormattingResultLog log, String jobName, RunnableJob job, CompositeData status) {
-        if (job != null) {
-            log.debug("{} Schedule: {}", jobName, job.getSchedulerExpression());
-        } else {
+        if (job == null) {
             log.warn("{} not registered", jobName);
+        } else if (!job.isEnabled()) {
+            log.debug("{} is disabled", jobName);
+            return;
+        } else {
+            log.debug("{} Schedule: {}", jobName, job.getSchedulerExpression());
         }
         if (RepositoryManagementUtil.isValid(status)) {
             log.debug("{} Last Status: {}", jobName, RepositoryManagementUtil.getStatusCode(status).name());
@@ -87,7 +90,9 @@ public class RepositoryMaintenanceHealthCheck implements HealthCheck {
                 repositoryManagementMBean.getRevisionGCStatus());
 
         if (versionCleanup != null) {
-            if (versionCleanup.isFailed()) {
+            if (!versionCleanup.isEnabled()) {
+                log.debug("VersionCleanup is disabled");
+            } else if (versionCleanup.isFailed()) {
                 log.critical("VersionCleanup Status: FAILED");
                 log.critical("VersionCleanup Message: {}", versionCleanup.getLastMessage());
             } else {

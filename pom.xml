@@ -22,25 +22,61 @@
     <parent>
         <groupId>org.apache.sling</groupId>
         <artifactId>sling-bundle-parent</artifactId>
-        <version>41</version>
+        <version>46</version>
         <relativePath />
     </parent>
-    <artifactId>org.apache.sling.jcr.maintenance</artifactId>
+
+    <groupId>io.websight</groupId>
+    <artifactId>io.websight.sling.jcr.maintenance</artifactId>
     <version>1.0.3-SNAPSHOT</version>
-    <name>Apache Sling JCR Maintenance</name>
-    <description>Maintenance jobs for the JCR</description>
+    <name>WebSight fork of Apache Sling JCR Maintenance</name>
+    <description>Maintenance jobs for the JCR. Forked from 1.0.3-SNAPSHOT</description>
 
     <properties>
         <project.build.outputTimestamp>2021-04-15T18:14:05Z</project.build.outputTimestamp>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <bnd.version>5.3.0</bnd.version>
     </properties>
 
+    <licenses>
+        <license>
+            <name>Apache License Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
 
     <scm>
-        <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-jcr-maintenance.git</connection>
-        <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-jcr-maintenance.git</developerConnection>
-        <url>https://gitbox.apache.org/repos/asf?p=sling-org-apache-sling-jcr-maintenance.git</url>
+        <connection>scm:git:git://github.com/websight-io/websight-jcr-maintenance.git</connection>
+        <developerConnection>scm:git:git@github.com:websight-io/websight-jcr-maintenance.git</developerConnection>
+        <url>https://github.com/websight-io/websight-jcr-maintenance</url>
         <tag>HEAD</tag>
     </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>artifact-registry</id>
+            <url>artifactregistry://europe-west1-maven.pkg.dev/websight-io/websight-maven-releases</url>
+        </repository>
+    </distributionManagement>
+
+    <organization>
+        <name>Dynamic Solutions sp. z o.o. sp. k.</name>
+        <url>https://websight.io</url>
+    </organization>
+
+    <repositories>
+        <repository>
+            <id>artifact-registry</id>
+            <url>artifactregistry://europe-west1-maven.pkg.dev/websight-io/websight-maven-releases</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>
@@ -92,10 +128,33 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>3.0.0-M1</version>
+                <configuration>
+                    <scmCommentPrefix>[skip ci] [maven]</scmCommentPrefix>
+                    <tagNameFormat>v@{project.version}</tagNameFormat>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-baseline-maven-plugin</artifactId>
+                <configuration>
+                    <failOnMissing>false</failOnMissing>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
     <dependencies>
+        <dependency>
+            <groupId>org.apache.sling</groupId>
+            <artifactId>org.apache.sling.testing.sling-mock-oak</artifactId>
+            <version>3.1.10-1.44.0</version>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -186,12 +245,6 @@
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.testing.sling-mock.junit4</artifactId>
             <version>2.6.2</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.sling</groupId>
-            <artifactId>org.apache.sling.testing.sling-mock-oak</artifactId>
-            <version>2.1.10-1.16.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
