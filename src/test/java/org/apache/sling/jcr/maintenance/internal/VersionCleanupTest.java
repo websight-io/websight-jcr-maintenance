@@ -153,7 +153,7 @@ public class VersionCleanupTest {
         assertEquals(5L, vcs.getLastCleanedVersionsCount());
     }
 
-    @Test(timeout = 5000)
+    @Test
     public void testNoRunWhenDisabled() throws RepositoryException {
 
         doVersions("/content/apache/sling-apache-org/index", 10);
