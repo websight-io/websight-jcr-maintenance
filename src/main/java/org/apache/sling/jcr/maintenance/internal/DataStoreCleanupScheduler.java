@@ -42,14 +42,20 @@ public class DataStoreCleanupScheduler implements RunnableJob {
 
     private final String schedulerExpression;
 
+    private final boolean enabled;
+
     @Activate
     public DataStoreCleanupScheduler(final DataStoreCleanupConfig config,
             @Reference final RepositoryManagementMBean repositoryManager) {
         this.repositoryManager = repositoryManager;
         this.schedulerExpression = config.scheduler_expression();
+        this.enabled = config.enabled();
     }
 
     public void run() {
+        if (!enabled) {
+            return;
+        }
         if (!RepositoryManagementUtil.isRunning(repositoryManager.getDataStoreGCStatus())) {
             log.info("Starting DataStore Garbage Collection");
             repositoryManager.startDataStoreGC(false);
@@ -63,6 +69,13 @@ public class DataStoreCleanupScheduler implements RunnableJob {
      */
     public String getSchedulerExpression() {
         return schedulerExpression;
+    }
+
+    /**
+     * @return the enabled
+     */
+    public boolean isEnabled() {
+        return enabled;
     }
 
 }
